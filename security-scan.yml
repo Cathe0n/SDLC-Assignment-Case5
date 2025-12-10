@@ -1,0 +1,31 @@
+name: CI Security Scan
+
+on: [push]
+
+jobs:
+  security-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run ESLint Analysis
+      # We allow this step to "fail" (continue-on-error) so the workflow 
+      # continues to the next step to upload the report even if vulnerabilities are found.
+      continue-on-error: true 
+      run: npx eslint . -f json -o eslint-report.json
+
+    - name: Upload JSON Report Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: eslint-security-report
+        path: eslint-report.json
